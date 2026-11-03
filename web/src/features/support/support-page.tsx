@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import { motion } from 'motion/react'
-import { ArrowLeft, Send, Plus, MessageSquare, Loader2, Paperclip, FileX } from 'lucide-react'
+import { ArrowLeft, Send, Plus, MessageSquare, Loader2, Paperclip, FileX, Pencil } from 'lucide-react'
 import {
   getTickets,
   getTicket,
   createTicket,
   replyToTicket,
+  editTicketMessage,
   attachToTicket,
   supportAttachmentUrl,
 } from '@/lib/api-client'
@@ -19,6 +20,42 @@ import { BackButton } from '@/components/ui/back-button'
 import { useBranding } from '@/lib/branding-provider'
 import { cn, getActiveLocale } from '@/lib/utils'
 import { toast } from 'sonner'
+
+
+
+/** Compress client images before upload. PDFs pass through. */
+async function compressImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file
+  if (file.size < 400_000) return file
+  const bitmap = await createImageBitmap(file)
+  const maxSide = 1600
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height))
+  const w = Math.round(bitmap.width * scale)
+  const h = Math.round(bitmap.height * scale)
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return file
+  ctx.drawImage(bitmap, 0, 0, w, h)
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/jpeg', 0.82),
+  )
+  if (!blob || blob.size >= file.size) return file
+  const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+  return new File([blob], name, { type: 'image/jpeg' })
+}
+
+function linkify(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g)
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline break-all">{part}</a>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  )
+}
 
 function formatTime(dateStr: string) {
   const d = new Date(dateStr)
@@ -244,10 +281,11 @@ function TicketChat({ ticketId, onBack }: { ticketId: string; onBack: () => void
    */
   const attachMutation = useMutation({
     mutationFn: async (file: File) => {
-      const dataBase64 = await readAsBase64(file)
+      const prepared = await compressImage(file)
+      const dataBase64 = await readAsBase64(prepared)
       return attachToTicket(ticketId, {
-        filename: file.name,
-        mimeType: file.type,
+        filename: prepared.name,
+        mimeType: prepared.type,
         dataBase64,
         content: text.trim() || undefined,
       })
@@ -362,7 +400,23 @@ function TicketChat({ ticketId, onBack }: { ticketId: string; onBack: () => void
                   </p>
                 )}
                 {msg.content && (
-                  <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                  <p className="text-sm whitespace-pre-wrap break-words">{linkify(msg.content)}</p>
+                )}
+                {isUser && msg.content && (
+                  <button
+                    type="button"
+                    className="mt-1 text-[10px] opacity-70 underline"
+                    onClick={() => {
+                      const next = window.prompt('Изменить сообщение', msg.content)
+                      if (next && next.trim() && next.trim() !== msg.content) {
+                        editTicketMessage(ticketId, msg.id, next.trim()).then(() => {
+                          queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                        }).catch(() => toast.error('Не удалось изменить'))
+                      }
+                    }}
+                  >
+                    Изменить
+                  </button>
                 )}
                 {msg.attachments && msg.attachments.length > 0 && (
                   <div className={cn('space-y-2', msg.content ? 'mt-2' : '')}>

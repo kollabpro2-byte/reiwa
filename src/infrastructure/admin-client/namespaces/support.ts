@@ -65,6 +65,15 @@ export class SupportNamespace {
     );
   }
 
+
+  editMessage(identity: UserIdentity, ticketId: string, messageId: string, content: string): Promise<unknown> {
+    return this.transport.request(
+      'PATCH',
+      `/api/internal/user/${encodeURIComponent(reference(identity))}/tickets/${encodeURIComponent(ticketId)}/messages/${encodeURIComponent(messageId)}`,
+      { content },
+    );
+  }
+
   reply(identity: UserIdentity, ticketId: string, content: string): Promise<unknown> {
     return this.transport.request(
       'POST',

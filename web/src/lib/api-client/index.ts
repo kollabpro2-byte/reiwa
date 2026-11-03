@@ -247,6 +247,7 @@ export {
   getTicket,
   getTickets,
   replyToTicket,
+  editTicketMessage,
   attachToTicket,
   createGuestTicket,
   getGuestConversation,

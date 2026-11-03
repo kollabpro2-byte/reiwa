@@ -74,6 +74,11 @@ export const createTicket = (subject: string, message: string) =>
     .post<SupportTicket>("/support/tickets", { subject, message })
     .then((r) => r.data);
 
+export const editTicketMessage = (ticketId: string, messageId: string, content: string) =>
+  apiClient
+    .patch(`/support/tickets/${ticketId}/messages/${messageId}`, { content })
+    .then((r) => r.data);
+
 export const replyToTicket = (ticketId: string, content: string) =>
   apiClient
     .post<SupportTicketMessage>(`/support/tickets/${ticketId}/reply`, { content })

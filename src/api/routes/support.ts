@@ -93,6 +93,26 @@ export function createSupportRouter(deps: {
     }
   });
 
+
+  router.patch("/support/tickets/:id/messages/:messageId", requireSession, async (req: AuthRequest, res) => {
+    const { content } = (req.body ?? {}) as { content?: string };
+    if (!content?.trim()) {
+      res.status(400).json({ error: "Content is required" });
+      return;
+    }
+    const ticketId = String(req.params.id);
+    const messageId = String(req.params.messageId);
+    try {
+      const result = await adminClient?.support.editMessage(
+        resolveUserIdentity(req), ticketId, messageId, content.trim(),
+      );
+      res.json(result);
+    } catch (err: unknown) {
+      getRequestLogger(req).error({ err, ticketId, messageId }, "PATCH message failed");
+      res.status(500).json({ error: "internal" });
+    }
+  });
+
   // POST /api/v1/support/tickets/:id/attachments — the customer attaches a
   // file to their OWN ticket.
   //
