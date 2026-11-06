@@ -1,5 +1,6 @@
 name: CI
 
+# Typecheck the BFF, including the Android registration forward.
 on:
   pull_request:
   push:

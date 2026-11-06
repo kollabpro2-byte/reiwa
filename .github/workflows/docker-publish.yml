@@ -1,5 +1,6 @@
 name: Docker Publish
 
+# Rebuild :main on every push, including app-registration forwards.
 on:
   push:
     branches: [main]
