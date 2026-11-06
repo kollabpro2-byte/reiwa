@@ -30,6 +30,8 @@ export interface WebAuthRegisterOptions {
   readonly referralCode?: string;
   /** Write-once network snapshot filled by the BFF (IP/UA/Referer/UTM). */
   readonly registrationSnapshot?: RegistrationSnapshotOptions;
+  /** Android app device id. Three free days are granted only when this is new. */
+  readonly appHwid?: string;
   /**
    * Legal documents the applicant ticked. Travels with the registration
    * itself so the panel can refuse BEFORE creating anything — there is no
@@ -204,6 +206,7 @@ export class WebAuthNamespace {
         referralCode: options?.referralCode,
         registrationSnapshot: options?.registrationSnapshot,
         acceptedLegalDocuments: options?.acceptedLegalDocuments,
+        appHwid: options?.appHwid,
       },
     );
   }

@@ -134,6 +134,13 @@ const registerSchema = z.object({
     .array(z.enum(LEGAL_DOCUMENT_KEYS))
     .max(LEGAL_DOCUMENT_KEYS.length)
     .optional(),
+  source: z.literal("app").optional(),
+  hwid: z
+    .string()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9._:-]+$/)
+    .optional(),
 });
 
 // Claim: mandatory first-entry onboarding for an authenticated Telegram-first
@@ -460,7 +467,7 @@ export function createAuthRouter(deps: {
         return;
       }
 
-      const { username, passwordHash, referralCode, utm, acceptedLegalDocuments } =
+      const { username, passwordHash, referralCode, utm, acceptedLegalDocuments, source, hwid } =
         parsed.data;
 
       if (!adminClient) {
@@ -474,11 +481,13 @@ export function createAuthRouter(deps: {
       const referer = typeof refererHeader === "string" ? refererHeader : null;
 
       // Proxy to Rezeis_Admin
+      const fromApp = source === "app" && typeof hwid === "string" && hwid.length > 0;
       const result = await adminClient.webAuth.register(username, passwordHash, {
         ...(referralCode ? { referralCode } : {}),
         ...(acceptedLegalDocuments ? { acceptedLegalDocuments } : {}),
+        ...(fromApp ? { appHwid: hwid } : {}),
         registrationSnapshot: {
-          channel: "web",
+          channel: fromApp ? "app" : "web",
           ip,
           userAgent,
           referer,

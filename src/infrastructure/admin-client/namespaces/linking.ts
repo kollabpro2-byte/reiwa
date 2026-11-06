@@ -41,11 +41,11 @@ export class LinkingNamespace {
 class TelegramLinking {
   constructor(private readonly transport: AdminTransport) {}
 
-  generate(userId: string): Promise<LinkTelegramGenerateResult> {
+  generate(userId: string, source?: 'app' | 'web'): Promise<LinkTelegramGenerateResult> {
     return this.transport.request<LinkTelegramGenerateResult>(
       'POST',
       '/api/internal/link/telegram/generate',
-      { userId },
+      { userId, ...(source ? { source } : {}) },
     );
   }
 

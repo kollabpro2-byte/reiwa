@@ -55,7 +55,9 @@ export function createLinkingRouter(deps: {
       const userId = req.webSession.userId;
 
       // Generate linking code via Rezeis_Admin
-      const result = await adminClient.linking.telegram.generate(userId);
+      const body = req.body as { source?: unknown } | undefined;
+      const source = body?.source === "app" ? "app" : "web";
+      const result = await adminClient.linking.telegram.generate(userId, source);
 
       // Get bot username — bot-config first, then the reiwa `BOT_USERNAME` env
       // fallback so the "Open bot" deep-link button always works even when the
