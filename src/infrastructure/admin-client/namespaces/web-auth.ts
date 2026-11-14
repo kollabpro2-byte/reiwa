@@ -227,11 +227,20 @@ export class WebAuthNamespace {
     );
   }
 
-  login(login: string, password: string): Promise<WebAuthLoginResult> {
+  /**
+   * `legacyPasswordHash` — `sha256(пароль)` от старых клиентов. Панель проверяет
+   * его ТОЛЬКО если открытый пароль не подошёл, и тогда перехеширует строку
+   * паролем: учётные записи, записанные двойным хешем, продолжают открываться.
+   */
+  login(login: string, password: string, legacyPasswordHash?: string): Promise<WebAuthLoginResult> {
     return this.transport.request<WebAuthLoginResult>(
       'POST',
       '/api/internal/web-auth/login',
-      { login, password },
+      {
+        login,
+        password,
+        ...(legacyPasswordHash ? { legacyPasswordHash } : {}),
+      },
     );
   }
 

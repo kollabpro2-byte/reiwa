@@ -113,8 +113,14 @@ const registerSchema = z.object({
   passwordHash: z
     .string()
     .length(64, "Password hash must be a 64-character SHA-256 hex string")
-    .regex(/^[a-f0-9]+$/i, "Password hash must be a valid hex string"),
-  // Optional referral code from the invite link (`/register?ref=<code>`).
+    .regex(/^[a-f0-9]+$/i, "Password hash must be a valid hex string")
+    .optional(),
+  /** Пароль в открытом виде — новый контракт; панель хеширует его сама. */
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password exceeds maximum length")
+    .optional(),
   referralCode: z.string().min(1).max(64).optional(),
   // Optional client-side UTM (server still stamps IP/UA/Referer from the request).
   utm: utmSchema,
@@ -141,7 +147,13 @@ const registerSchema = z.object({
     .max(128)
     .regex(/^[A-Za-z0-9._:-]+$/)
     .optional(),
-});
+})
+  // Либо открытый пароль (новый контракт), либо sha256 (старые клиенты).
+  // Панель принимает оба: открытый хеширует сама, хеш считает переходным.
+  .refine((body) => Boolean(body.password || body.passwordHash), {
+    message: "Password is required",
+    path: ["password"],
+  });
 
 // Claim: mandatory first-entry onboarding for an authenticated Telegram-first
 // user who has a `User` but no `WebAccount`. Same field rules as register.
@@ -160,16 +172,37 @@ const claimSchema = z.object({
     .regex(/^[a-f0-9]+$/i, "Password hash must be a valid hex string"),
 });
 
-const loginSchema = z.object({
-  username: z
-    .string()
-    .min(1, "Username is required")
-    .max(254, "Username exceeds maximum length"),
-  passwordHash: z
-    .string()
-    .min(1, "Password is required")
-    .max(128, "Password exceeds maximum length"),
-});
+const loginSchema = z
+  .object({
+    username: z
+      .string()
+      .min(1, "Username is required")
+      .max(254, "Username exceeds maximum length"),
+    /**
+     * Пароль в открытом виде. Идёт по TLS до BFF и дальше до панели по
+     * внутренней сети; хеширует его панель (scrypt с солью). Так пароль больше
+     * не превращается в сам себя: перехваченный запрос нельзя переиграть.
+     */
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .max(128, "Password exceeds maximum length")
+      .optional(),
+    /**
+     * Совместимость со старыми сборками приложения: они присылают
+     * `sha256(пароль)`. Панель принимает его как `legacyPasswordHash` и
+     * перехеширует строку открытым паролем при первом же входе.
+     */
+    passwordHash: z
+      .string()
+      .min(1, "Password is required")
+      .max(128, "Password exceeds maximum length")
+      .optional(),
+  })
+  .refine((body) => Boolean(body.password || body.passwordHash), {
+    message: "Password is required",
+    path: ["password"],
+  });
 
 // `username` keeps its name for older bundles; it carries a login OR the e-mail
 // verified on the account.
@@ -467,7 +500,7 @@ export function createAuthRouter(deps: {
         return;
       }
 
-      const { username, passwordHash, referralCode, utm, acceptedLegalDocuments, source, hwid } =
+      const { username, password, passwordHash, referralCode, utm, acceptedLegalDocuments, source, hwid } =
         parsed.data;
 
       if (!adminClient) {
@@ -482,7 +515,7 @@ export function createAuthRouter(deps: {
 
       // Proxy to Rezeis_Admin
       const fromApp = source === "app" && typeof hwid === "string" && hwid.length > 0;
-      const result = await adminClient.webAuth.register(username, passwordHash, {
+      const result = await adminClient.webAuth.register(username, password ?? passwordHash!, {
         ...(referralCode ? { referralCode } : {}),
         ...(acceptedLegalDocuments ? { acceptedLegalDocuments } : {}),
         ...(fromApp ? { appHwid: hwid } : {}),
@@ -581,7 +614,7 @@ export function createAuthRouter(deps: {
           return;
         }
 
-        const { username, passwordHash } = parsed.data;
+        const { username, password, passwordHash } = parsed.data;
 
         if (!adminClient) {
           // Internal failure after credential validation attempt — treat as invalid credentials
@@ -598,7 +631,14 @@ export function createAuthRouter(deps: {
         };
 
         try {
-          result = await adminClient.webAuth.login(username, passwordHash);
+          result = await adminClient.webAuth.login(
+            username,
+            password ?? passwordHash!,
+            // Переходное: панель проверит его только если открытый пароль не подошёл,
+            // и сразу перехеширует строку паролем. Без этого старые учётки,
+            // записанные как scrypt(sha256(пароль)), перестали бы открываться.
+            passwordHash,
+          );
         } catch (loginError: unknown) {
           // A refused sign-in may be an account imported WITHOUT a password —
           // one the panel no longer lets anybody claim by typing one. Its owner
@@ -1464,7 +1504,7 @@ export function createAuthRouter(deps: {
       const result = await adminClient.webAuth.telegramClaim(
         telegramId,
         parsed.data.username,
-        parsed.data.passwordHash,
+        parsed.data.password ?? parsed.data.passwordHash!,
       );
 
       if (result.status === "needs_admin_merge") {
