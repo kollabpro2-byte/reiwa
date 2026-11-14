@@ -12,7 +12,13 @@ export type LegalDocumentKey = LegalDocument["key"];
 
 export interface LoginRequest {
   username: string;
-  passwordHash: string;
+  /**
+   * Пароль в открытом виде (HTTPS). Хеширует его панель — scrypt с солью.
+   * Именно этот путь позволяет строкам, записанным двойным хешем, мигрировать.
+   */
+  password?: string;
+  /** Совместимость: старые сборки SPA присылают sha256(пароль). */
+  passwordHash?: string;
 }
 
 export interface LoginResponse {

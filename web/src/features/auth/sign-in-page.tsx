@@ -150,11 +150,15 @@ export default function SignInPage() {
       setIsSubmitting(true)
 
       try {
-        // SHA-256 hash the password before sending
+        // Пароль уходит открытым по HTTPS, а хеш — рядом для совместимости:
+        // панель проверяет открытый, и только если он не подошёл — переданный
+        // sha256, после чего перехеширует строку паролем. Так учётки, записанные
+        // двойным хешем, переходят на нормальный scrypt при первом входе.
         const passwordHash = await hashPassword(password)
 
         const response = await login({
           username: trimmedUsername,
+          password,
           passwordHash,
         })
 
