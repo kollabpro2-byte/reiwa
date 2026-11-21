@@ -35,6 +35,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MockInstance } from "vitest";
 
 const api = vi.hoisted(() => ({
+  // «Автосписание» под карточкой спрашивает, ведёт ли провайдер списания;
+  // «нет автосписаний» держит строку вне этих спек.
+  getPaymentMethods: vi.fn().mockResolvedValue({ methods: [], total: 0 }),
   getActionPolicy: vi.fn(),
   getAllSubscriptions: vi.fn(),
   getSubscriptionDevices: vi.fn(),

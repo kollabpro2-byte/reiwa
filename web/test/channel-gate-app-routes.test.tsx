@@ -24,6 +24,9 @@ import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({
+  // «Автосписание» под карточкой спрашивает, ведёт ли провайдер списания;
+  // «нет автосписаний» держит строку вне этих спек и не ходит в сеть.
+  getPaymentMethods: vi.fn().mockResolvedValue({ methods: [], total: 0 }),
   getSession: vi.fn(),
   getChannelGate: vi.fn(),
   checkChannelGate: vi.fn(),
