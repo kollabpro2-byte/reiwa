@@ -429,9 +429,9 @@ export const en: RuDict = {
       autopayCaptionSbp: 'via SBP, for automatic charging',
       // The autopay row reads as its own thing, not as a second gateway with the same name.
       autopayTitle: 'Autopayments',
-      autopayNote: 'charged automatically from now on',
-      autopayNoteCard: 'charged automatically from now on, by card',
-      autopayNoteSbp: 'charged automatically from now on, via SBP',
+      autopayNote: 'automatic charges every billing period',
+      autopayNoteCard: 'automatic card charges every billing period',
+      autopayNoteSbp: 'automatic SBP charges every billing period',
       // What exactly this gateway's button charges, in place of the currency code.
       captionAntilopay: 'one-time payment',
       captionPlatega: 'one-time payment by MIR or SBP card',
