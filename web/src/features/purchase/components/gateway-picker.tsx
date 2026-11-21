@@ -237,7 +237,10 @@ export function GatewayPicker({
               </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-foreground">{gatewayLabel(gw.type, gw.displayName)}</p>
-                <p className="whitespace-pre-line text-xs text-muted-foreground">{gatewayRowCaption(gw, t)}</p>
+                {/* Подпись заметнее служебного серого, но тише названия над ней. */}
+                <p className="whitespace-pre-line text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">
+                  {gatewayRowCaption(gw, t)}
+                </p>
               </div>
             </button>
             {autopayOffered(gw) &&
@@ -275,7 +278,8 @@ export function GatewayPicker({
                     />
                     <div className="min-w-0 text-left">
                       <p className="font-semibold text-foreground">{t("purchase.gateway.autopayTitle")}</p>
-                      <p className="text-xs text-muted-foreground">{caption}</p>
+                      {/* Тот же тон, что у «разовая оплата по СБП»: заметно, но не светлее названия. */}
+                      <p className="text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">{caption}</p>
                     </div>
                   </button>
                 );

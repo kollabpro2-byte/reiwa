@@ -1035,7 +1035,10 @@ function SelectGateway() {
               </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-[color:var(--brand-foreground)]">{gatewayLabel(gw.type, gw.displayName)}</p>
-                <p className="whitespace-pre-line text-xs text-[color:var(--brand-muted-foreground)]">{gatewayRowCaption(gw, t)}</p>
+                {/* Подпись заметнее служебного серого, но тише названия над ней. */}
+                <p className="whitespace-pre-line text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">
+                  {gatewayRowCaption(gw, t)}
+                </p>
               </div>
             </button>
             {autopayOffered(gw) &&
@@ -1057,7 +1060,8 @@ function SelectGateway() {
                     />
                     <div className="min-w-0 text-left">
                       <p className="font-semibold text-[color:var(--brand-foreground)]">{t("purchase.gateway.autopayTitle")}</p>
-                      <p className="text-xs text-[color:var(--brand-muted-foreground)]">
+                      {/* Тот же тон, что у «разовая оплата по СБП». */}
+                      <p className="text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">
                         {delay === null
                           ? t(autopayNoteKey(method, gw.type))
                           : t("purchase.gateway.autopayCaptionSbpDelayShort", { delay: describeAutopayDelay(t, delay) })}
