@@ -34,6 +34,9 @@ const api = vi.hoisted(() => ({
   // Resolving to null here is the switch's off position, which is what every
   // assertion in this file assumes about that button.
   getConnectPage: vi.fn().mockResolvedValue(null),
+  // «Автосписание» под карточкой спрашивает, ведёт ли провайдер списания;
+  // «нет автосписаний» держит строку вне этих спек.
+  getPaymentMethods: vi.fn().mockResolvedValue({ methods: [], total: 0 }),
 }));
 
 vi.mock("react-i18next", () => ({

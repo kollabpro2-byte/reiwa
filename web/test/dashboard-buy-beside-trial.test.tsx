@@ -30,6 +30,9 @@ const api = vi.hoisted(() => ({
   deleteSubscriptionDevice: vi.fn(),
   regenerateSubscriptionLink: vi.fn(),
   getConnectPage: vi.fn().mockResolvedValue(null),
+  // «Автосписание» под карточкой спрашивает, ведёт ли провайдер списания;
+  // «нет автосписаний» держит строку вне этих спек.
+  getPaymentMethods: vi.fn().mockResolvedValue({ methods: [], total: 0 }),
 }));
 const navigate = vi.hoisted(() => vi.fn());
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), warning: vi.fn() }));

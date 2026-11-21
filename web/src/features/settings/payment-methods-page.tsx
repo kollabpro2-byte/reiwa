@@ -31,6 +31,7 @@ import {
 } from '@/lib/api-client';
 import { useOperatorTimeZone } from '@/lib/operator-time-zone';
 import { formatDate } from '@/lib/utils';
+import { formatCharge as formatChargeFromLib } from '@/lib/provider-subscription-charge';
 import { AutopayGatewayMark } from '@/components/ui/gateway-icon';
 import { impliedAutopayMethod } from '@/lib/autopay-offer';
 import { BackButton } from '@/components/ui/back-button';
@@ -501,21 +502,7 @@ function formatCharge(
   subscription: Pick<ProviderSubscription, 'amount' | 'currency' | 'intervalUnit' | 'intervalCount'>,
   t: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
-  const amount = Number(subscription.amount);
-  const sum = `${Number.isFinite(amount) ? amount.toLocaleString() : subscription.amount} ${
-    subscription.currency === 'RUB' ? '₽' : subscription.currency
-  }`;
-  const unit = ['day', 'week', 'month', 'year'].includes(subscription.intervalUnit)
-    ? subscription.intervalUnit
-    : null;
-  if (unit === null) return sum;
-  const period =
-    subscription.intervalCount === 1
-      ? t(`paymentMethods.providerSubscriptions.everyUnit.${unit}`)
-      : t(`paymentMethods.providerSubscriptions.every${unit[0]!.toUpperCase()}${unit.slice(1)}`, {
-          count: subscription.intervalCount,
-        });
-  return `${sum} ${period}`;
+  return formatChargeFromLib(subscription, t);
 }
 
 function formatMethodMeta(

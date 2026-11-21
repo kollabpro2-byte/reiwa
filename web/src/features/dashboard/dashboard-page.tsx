@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { ReiwaLogo } from "@/components/ui/reiwa-logo";
 import { SubscriptionCarousel } from "./components/subscription-carousel";
 import { SubscriptionActions } from "./components/subscription-actions";
+import { SubscriptionAutopay } from "./components/subscription-autopay";
 import { ConnectHelpBanner } from "./components/connect-help-banner";
 import {
   pickConnectHelpSubscription,
@@ -457,6 +458,15 @@ export default function DashboardPage() {
               onDeleteGuardActiveChange={handleDeleteGuardActiveChange}
             />
           </div>
+
+          {/* «Автосписание» — состояние денег подписки: срок следующего
+              списания и отключение. Строка появляется только когда провайдер
+              ведёт автосписание по этой подписке, и гаснет, пока подписку
+              удаляют (владелец, 22.11.2026). */}
+          <SubscriptionAutopay
+            subscription={activeSubscription}
+            disabled={deleteGuardActive}
+          />
 
           {/* «Не получилось подключиться?» — between the card and its buttons,
               for the card on screen only. Renders nothing unless the panel

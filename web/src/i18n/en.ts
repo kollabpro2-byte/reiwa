@@ -257,6 +257,25 @@ export const en: RuDict = {
     unread_few: '{{count}} unread',
     unread_many: '{{count}} unread',
     unread_other: '{{count}} unread',
+    // Subscription autopay: the row under the card and its cancel dialog.
+    autopay: {
+      title: 'Autopayment',
+      onChip: 'on',
+      pastDueChip: 'payment failed',
+      unavailableChip: 'unavailable',
+      nextCharge: 'next charge {{date}} · {{gateway}}',
+      unavailable: 'subscription deleted — no charges',
+      noNext: 'not scheduled',
+      dialogTitle: 'Autopayment',
+      dialogSub: '«{{plan}}» subscription',
+      rowNext: 'Next charge',
+      rowAmount: 'Amount',
+      rowMethod: 'Payment method',
+      rowEnds: 'Charges until',
+      note: 'The charge happens automatically. Turning autopayment off does not cancel the subscription: it stays active until {{date}}.',
+      noteNoDate:
+        'The charge happens automatically. Turning autopayment off does not cancel the subscription.',
+    },
   },
   connectHelp: {
     bannerTitle: "Couldn't connect?",
