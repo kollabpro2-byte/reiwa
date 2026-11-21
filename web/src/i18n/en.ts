@@ -427,6 +427,14 @@ export const en: RuDict = {
       // Antilopay repeats a charge two ways; the payer chooses before the form opens.
       autopayCaptionCard: 'by card, for automatic charging',
       autopayCaptionSbp: 'via SBP, for automatic charging',
+      // The autopay row reads as its own thing, not as a second gateway with the same name.
+      autopayTitle: 'Autopayments',
+      autopayNote: 'charged automatically from now on',
+      autopayNoteCard: 'charged automatically from now on, by card',
+      autopayNoteSbp: 'charged automatically from now on, via SBP',
+      // What exactly this gateway's button charges, in place of the currency code.
+      captionAntilopay: 'one-time payment',
+      captionPlatega: 'one-time payment by MIR or SBP card',
       // With a delay of the first charge: what happens now, what starts at once, and when the first charge comes.
       autopayCaptionSbpDelay:
         'via SBP, for automatic charging. Nothing is charged now: the first charge of {{amount}} comes after {{delay}}, and the plan opens right after it.',

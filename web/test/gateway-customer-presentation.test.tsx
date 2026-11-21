@@ -103,7 +103,9 @@ describe("the payment step, with the operator's own name, line and icon", () => 
     expect(wata?.querySelector("img")?.getAttribute("src")).toBe(ICON_URL);
 
     expect(platega?.textContent).toContain("Platega");
-    expect(platega?.textContent).toContain("RUB");
+    // Platega всегда говорит, что спишет: «картой МИР и СБП разовая оплата»
+    // вместо кода валюты (владелец, 21.11.2026).
+    expect(platega?.textContent).toContain("purchase.gateway.captionPlatega");
     expect(platega?.querySelector("img")?.getAttribute("src")).not.toBe(ICON_URL);
   });
 

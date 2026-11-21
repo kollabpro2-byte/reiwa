@@ -104,6 +104,19 @@ export function autopayCaptionKey(method: AutopayMethod | null | undefined, gate
   return "purchase.gateway.autopayCaption";
 }
 
+/**
+ * Что говорит подпись строки автосписания, когда отсрочки первого списания нет.
+ *
+ * Строка называется «Автосписания» (владелец, 21.11.2026), поэтому подпись
+ * объясняет, что будет дальше: «дальше списывается само» и каким способом.
+ */
+export function autopayNoteKey(method: AutopayMethod | null | undefined, gatewayType?: string | null): string {
+  const shown = method ?? impliedAutopayMethod(gatewayType);
+  if (shown === "CARD") return "purchase.gateway.autopayNoteCard";
+  if (shown === "SBP") return "purchase.gateway.autopayNoteSbp";
+  return "purchase.gateway.autopayNote";
+}
+
 /** What the quote step tells the payer about the automatic charging they chose. */
 export function autopayHintKey(gatewayType: string | null | undefined, method: AutopayMethod | null | undefined): string {
   if (!isProviderSubscriptionGateway(gatewayType)) return "purchase.quote.autopayHint";

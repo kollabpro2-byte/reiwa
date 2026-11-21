@@ -29,12 +29,13 @@ import type { RenewalOptionItem, Subscription } from "@/types/api";
 import { cn, startCheckoutRedirect } from "@/lib/utils";
 import { savePendingCheckout } from "@/lib/pending-checkout";
 import { TariffCard } from "@/features/plans/tariff-card";
-import { gatewayCaption, gatewayLabel } from "@/lib/gateway-display";
+import { gatewayCaption, gatewayLabel, gatewayRowCaption } from "@/lib/gateway-display";
 import { createRenewalIdempotencyKey } from "./renewal-idempotency";
-import { AutopayGatewayMark, GatewayIcon } from "@/components/ui/gateway-icon";
+import { AutopayGatewayMark, GatewayIcon, SbpMark } from "@/components/ui/gateway-icon";
 import {
   autopayCaptionKey,
   autopayHintKey,
+  autopayNoteKey,
   isAutopayDelayChangedRefusal,
   type AutopayMethod,
   type AutopayGateway,
@@ -1021,10 +1022,20 @@ function SelectGateway() {
               onClick={() => choose(gw)}
               className="w-full glass-card p-4 flex items-center gap-4 hover:border-(--brand-ink)/30 active:scale-[0.98] transition-all"
             >
-              <GatewayIcon type={gw.type} currency={gw.currency} iconSvg={gw.displayIconSvg} className="h-7 w-7 shrink-0" />
+              <span
+                className={cn(
+                  "flex shrink-0 items-center",
+                  // Antilopay платит по СБП: рядом с её знаком стоит знак СБП,
+                  // чтобы разовая оплата читалась до нажатия (скриншот 21.11.2026).
+                  gw.type === "ANTILOPAY" ? "gap-1" : "h-7 w-7 justify-center text-2xl",
+                )}
+              >
+                <GatewayIcon type={gw.type} currency={gw.currency} iconSvg={gw.displayIconSvg} className="h-7 w-7" />
+                {gw.type === "ANTILOPAY" && <SbpMark className="h-5 w-5" />}
+              </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-[color:var(--brand-foreground)]">{gatewayLabel(gw.type, gw.displayName)}</p>
-                <p className="whitespace-pre-line text-xs text-[color:var(--brand-muted-foreground)]">{gatewayCaption(gw)}</p>
+                <p className="whitespace-pre-line text-xs text-[color:var(--brand-muted-foreground)]">{gatewayRowCaption(gw, t)}</p>
               </div>
             </button>
             {autopayOffered(gw) &&
@@ -1044,11 +1055,11 @@ function SelectGateway() {
                       method={method}
                       iconSvg={gw.displayIconSvg}
                     />
-                    <div className="text-left">
-                      <p className="font-medium text-[color:var(--brand-foreground)]">{gatewayLabel(gw.type, gw.displayName)}</p>
+                    <div className="min-w-0 text-left">
+                      <p className="font-semibold text-[color:var(--brand-foreground)]">{t("purchase.gateway.autopayTitle")}</p>
                       <p className="text-xs text-[color:var(--brand-muted-foreground)]">
                         {delay === null
-                          ? t(autopayCaptionKey(method, gw.type))
+                          ? t(autopayNoteKey(method, gw.type))
                           : t("purchase.gateway.autopayCaptionSbpDelayShort", { delay: describeAutopayDelay(t, delay) })}
                       </p>
                     </div>

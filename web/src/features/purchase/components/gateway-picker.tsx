@@ -17,16 +17,17 @@ import { getEnabledGateways, getPaymentMethods } from "@/lib/api-client";
 import type { GatewayOption } from "@/stores/purchase.store";
 import type { PlanPrice } from "@/types/api";
 import { cn } from "@/lib/utils";
-import { gatewayCaption, gatewayLabel } from "@/lib/gateway-display";
+import { gatewayCaption, gatewayLabel, gatewayRowCaption } from "@/lib/gateway-display";
 import {
   autopayCaptionKey,
   autopayHintKey,
   type AutopayGateway,
+  autopayNoteKey,
   autopayOptions,
   offersAutopay,
 } from "@/lib/autopay-offer";
 import { autopayDelayFor, describeAutopayDelay } from "@/lib/autopay-delay";
-import { AutopayGatewayMark, GatewayIcon } from "@/components/ui/gateway-icon";
+import { AutopayGatewayMark, GatewayIcon, SbpMark } from "@/components/ui/gateway-icon";
 import {
   formatSavedPaymentMethodMeta,
   formatSavedPaymentMethodTitle,
@@ -223,12 +224,20 @@ export function GatewayPicker({
               onClick={() => onSelect(option(gw))}
               className="w-full glass-card p-4 flex items-center gap-4 hover:border-(--brand-ink)/30 active:scale-[0.98] transition-all"
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center text-2xl">
+              <span
+                className={cn(
+                  "flex shrink-0 items-center",
+                  // Antilopay платит по СБП: рядом с её знаком стоит знак СБП,
+                  // чтобы разовая оплата читалась до нажатия (скриншот 21.11.2026).
+                  gw.type === "ANTILOPAY" ? "gap-1" : "h-7 w-7 justify-center text-2xl",
+                )}
+              >
                 <GatewayIcon type={gw.type} currency={gw.currency} iconSvg={gw.displayIconSvg} className="h-7 w-7" />
+                {gw.type === "ANTILOPAY" && <SbpMark className="h-5 w-5" />}
               </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-foreground">{gatewayLabel(gw.type, gw.displayName)}</p>
-                <p className="whitespace-pre-line text-xs text-muted-foreground">{gatewayCaption(gw)}</p>
+                <p className="whitespace-pre-line text-xs text-muted-foreground">{gatewayRowCaption(gw, t)}</p>
               </div>
             </button>
             {autopayOffered(gw) &&
@@ -239,7 +248,7 @@ export function GatewayPicker({
                 const price = purchase?.priceFor(gw.type);
                 const caption =
                   delay === null
-                    ? t(autopayCaptionKey(method, gw.type))
+                    ? t(autopayNoteKey(method, gw.type))
                     : t("purchase.gateway.autopayCaptionSbpDelay", {
                         delay: describeAutopayDelay(t, delay),
                         amount: price === undefined ? "—" : formatPaymentAmount(price.price, price.currency),
@@ -264,8 +273,8 @@ export function GatewayPicker({
                       method={method}
                       iconSvg={gw.displayIconSvg}
                     />
-                    <div className="text-left">
-                      <p className="font-medium text-foreground">{gatewayLabel(gw.type, gw.displayName)}</p>
+                    <div className="min-w-0 text-left">
+                      <p className="font-semibold text-foreground">{t("purchase.gateway.autopayTitle")}</p>
                       <p className="text-xs text-muted-foreground">{caption}</p>
                     </div>
                   </button>

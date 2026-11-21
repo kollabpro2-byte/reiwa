@@ -55,9 +55,13 @@ import { usePurchaseStore } from "../src/stores/purchase.store";
 import { useRenewalStore } from "../src/stores/renewal.store";
 
 const PAY = "purchase.quote.pay";
-const CAPTION = "purchase.gateway.autopayCaption";
-const CARD_CAPTION = "purchase.gateway.autopayCaptionCard";
-const SBP_CAPTION = "purchase.gateway.autopayCaptionSbp";
+// Строка автосписания теперь называется «Автосписания» и говорит «дальше
+// списывается само» (владелец, 21.11.2026) — ключи ниже это и проверяют.
+const CAPTION = "purchase.gateway.autopayNote";
+const CARD_CAPTION = "purchase.gateway.autopayNoteCard";
+const SBP_CAPTION = "purchase.gateway.autopayNoteSbp";
+// Разовая оплата: подпись строки шлюза вместо кода валюты.
+const ORDINARY = "purchase.gateway.captionAntilopay";
 const CARD_HINT = "purchase.quote.autopayProviderCardHint";
 const SBP_HINT = "purchase.quote.autopayProviderHint";
 
@@ -113,13 +117,14 @@ function buttons(): HTMLButtonElement[] {
 
 /** The AntiloPay row whose caption is exactly `caption`. */
 function option(caption: string): HTMLButtonElement | undefined {
-  return buttons().find(
-    (candidate) =>
-      candidate.textContent?.includes("AntiloPay") === true &&
-      candidate.textContent.includes(caption) &&
-      // «для автоматического списания» is inside the longer captions too.
-      (caption !== CAPTION || (!candidate.textContent.includes(CARD_CAPTION) && !candidate.textContent.includes(SBP_CAPTION))),
-  );
+  return buttons().find((candidate) => {
+    const shown = candidate.textContent ?? "";
+    // Заголовок строки автосписания больше не несёт название шлюза
+    // («Автосписания»), поэтому строки различаются подписью, а не именем.
+    if (!shown.includes(caption)) return false;
+    // «дальше списывается само» is inside the longer captions too.
+    return caption !== CAPTION || (!shown.includes(CARD_CAPTION) && !shown.includes(SBP_CAPTION));
+  });
 }
 
 async function tap(target: HTMLButtonElement | undefined, what: string): Promise<void> {
@@ -202,8 +207,8 @@ describe("the purchase page offers Antilopay's automatic charging twice", () => 
     expect(option(CARD_CAPTION), "the card option").toBeDefined();
     expect(option(SBP_CAPTION), "the SBP option").toBeDefined();
     expect(option(CAPTION), "a third, method-less option").toBeUndefined();
-    // The ordinary payment: AntiloPay with its currency, no caption.
-    expect(buttons().some((candidate) => candidate.textContent?.includes("AntiloPay") && candidate.textContent.includes("RUB"))).toBe(true);
+    // Разовая оплата: AntiloPay со подписью «разовая оплата» (не код валюты).
+    expect(option(ORDINARY), "the ordinary payment").toBeDefined();
   });
 
   it.each([
@@ -295,9 +300,7 @@ describe("the purchase page offers Antilopay's automatic charging twice", () => 
   it("sends no method with the ordinary payment", async () => {
     await mountPurchaseGateway();
 
-    const ordinary = buttons().find(
-      (candidate) => candidate.textContent?.includes("AntiloPay") === true && candidate.textContent.includes("RUB"),
-    );
+    const ordinary = option(ORDINARY);
     await tap(ordinary, "ordinary AntiloPay payment");
     await waitUntil(() => buttons().some((candidate) => candidate.textContent?.trim() === PAY));
     await tap(buttons().find((candidate) => candidate.textContent?.trim() === PAY), "Pay");

@@ -71,6 +71,11 @@ export function AutopayGatewayMark({
   );
 }
 
+/** The SBP mark on its own: a one-time payment that goes over SBP. */
+export function SbpMark({ className }: { className?: string }) {
+  return <img src={sbpIconUrl} alt="" aria-hidden className={cn("object-contain", className)} />;
+}
+
 export function GatewayIcon({
   type,
   currency,

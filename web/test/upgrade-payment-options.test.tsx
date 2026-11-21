@@ -151,7 +151,7 @@ describe("the payment step of «Сменить тариф»", () => {
     await settle();
   };
   const autopayOption = (button: HTMLButtonElement) =>
-    button.textContent?.includes("purchase.gateway.autopayCaption") === true;
+    button.textContent?.includes("purchase.gateway.autopayNote") === true;
 
   it("offers «для автоматического списания» and makes the change with it", async () => {
     await openGatewayStep();

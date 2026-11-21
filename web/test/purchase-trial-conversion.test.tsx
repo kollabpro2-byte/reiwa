@@ -140,15 +140,21 @@ async function tap(label: string | HTMLButtonElement): Promise<void> {
 }
 
 const PLATEGA_WIRE = { type: "PLATEGA", displayName: "Platega", currency: "RUB", isActive: true, autopay: true };
-const AUTOPAY_CAPTION = "purchase.gateway.autopayCaption";
+const AUTOPAY_CAPTION = "purchase.gateway.autopayNote";
+// Разовая оплата: подпись строки шлюза вместо кода валюты.
+const ORDINARY_CAPTION = "purchase.gateway.captionPlatega";
 
-/** Platega's option on the gateway step: the ordinary payment, or «для автоматического списания». */
+/** Platega's option on the gateway step: the ordinary payment, or «Автосписания». */
 function plategaOption(autopay: boolean): HTMLButtonElement | undefined {
-  return [...(container?.querySelectorAll("button") ?? [])].find(
-    (candidate) =>
-      candidate.textContent?.includes("Platega") === true &&
-      candidate.textContent.includes(AUTOPAY_CAPTION) === autopay,
-  );
+  return [...(container?.querySelectorAll("button") ?? [])].find((candidate) => {
+    const shown = candidate.textContent ?? "";
+    // Строка автосписания называется «Автосписания» и больше не несёт имя
+    // шлюза (владелец, 21.11.2026), поэтому её ищем по подписи, а обычный
+    // платёж — по имени шлюза и подписи «разовая оплата».
+    return autopay
+      ? shown.includes(AUTOPAY_CAPTION)
+      : shown.includes("Platega") && shown.includes(ORDINARY_CAPTION);
+  });
 }
 
 function autopayOption(): HTMLButtonElement {

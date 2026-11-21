@@ -48,7 +48,7 @@ vi.mock("@/lib/use-access-mode", () => ({
 import RenewalPage from "../src/features/renewal/renewal-page";
 import { useRenewalStore } from "../src/stores/renewal.store";
 
-const AUTOPAY_CAPTION = "purchase.gateway.autopayCaption";
+const AUTOPAY_CAPTION = "purchase.gateway.autopayNote";
 const PLATEGA_WIRE = { type: "PLATEGA", displayName: "Platega", currency: "RUB", isActive: true, autopay: true };
 
 /** sub-a, on plan-p, renewed for 30 days onto `planId`. */

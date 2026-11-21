@@ -138,6 +138,33 @@ export function gatewayCaption(gateway: {
   return description ? description : gateway.currency;
 }
 
+/**
+ * Подпись строки шлюза, где код валюты ничего не объясняет: клиент должен
+ * видеть до нажатия, что это разовый платёж, а не подписка (владелец,
+ * 21.11.2026). `null` — оставить валюту, как было.
+ */
+export function gatewayCaptionKey(type: string): string | null {
+  if (type === "ANTILOPAY") return "purchase.gateway.captionAntilopay";
+  if (type === "PLATEGA") return "purchase.gateway.captionPlatega";
+  return null;
+}
+
+/**
+ * Что стоит под названием шлюза в списке оплаты.
+ *
+ * Своё описание панели («Как шлюз видят клиенты») остаётся главным; без него
+ * — {@link gatewayCaptionKey}, иначе код валюты.
+ */
+export function gatewayRowCaption(
+  gateway: { readonly type: string; readonly currency: string; readonly displayDescription?: string | null },
+  t: (key: string) => string,
+): string {
+  const own = gateway.displayDescription?.trim();
+  if (own) return own;
+  const key = gatewayCaptionKey(gateway.type);
+  return key === null ? gatewayCaption(gateway) : t(key);
+}
+
 /** Real payment-system SVG URL for a gateway type, or `null`. */
 export function gatewayIconUrl(type: string): string | null {
   const file = PAYMENT_ICON_FILE[type];
