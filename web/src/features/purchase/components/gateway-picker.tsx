@@ -237,8 +237,10 @@ export function GatewayPicker({
               </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-foreground">{gatewayLabel(gw.type, gw.displayName)}</p>
-                {/* Подпись заметнее служебного серого, но тише названия над ней. */}
-                <p className="whitespace-pre-line text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">
+                {/* Подпись заметнее служебного серого, но тише названия над ней.
+                    Вес — как у Platega (обычный), цвет — как у пояснения Antilopay:
+                    все три строки читаются одинаково (владелец, 22.11.2026). */}
+                <p className="whitespace-pre-line text-xs text-[color:var(--brand-foreground)] opacity-80">
                   {gatewayRowCaption(gw, t)}
                 </p>
               </div>
@@ -278,8 +280,8 @@ export function GatewayPicker({
                     />
                     <div className="min-w-0 text-left">
                       <p className="font-semibold text-foreground">{t("purchase.gateway.autopayTitle")}</p>
-                      {/* Тот же тон, что у «разовая оплата по СБП»: заметно, но не светлее названия. */}
-                      <p className="text-xs font-medium text-[color:var(--brand-foreground)] opacity-80">{caption}</p>
+                      {/* Тот же тон и вес, что у «разовая оплата по СБП»: заметно, но не светлее названия. */}
+                      <p className="text-xs text-[color:var(--brand-foreground)] opacity-80">{caption}</p>
                     </div>
                   </button>
                 );
