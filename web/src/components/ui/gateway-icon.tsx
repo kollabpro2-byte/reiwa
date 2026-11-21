@@ -46,7 +46,7 @@ export function AutopayGatewayMark({
     return (
       <span className="flex h-7 shrink-0 items-center gap-1">
         <GatewayIcon type={type} currency={currency} iconSvg={iconSvg} className="h-7 w-7" />
-        <CreditCard aria-hidden className="h-6 w-6 text-[color:var(--brand-muted-foreground)]" />
+        <CreditCard aria-hidden className="h-5 w-5 text-[color:var(--brand-muted-foreground)]" />
       </span>
     );
   }
@@ -54,7 +54,7 @@ export function AutopayGatewayMark({
     return (
       <span className="flex h-7 shrink-0 items-center gap-1">
         <GatewayIcon type={type} currency={currency} iconSvg={iconSvg} className="h-7 w-7" />
-        <img src={sbpIconUrl} alt="" aria-hidden className="h-6 w-6 object-contain" />
+        <img src={sbpIconUrl} alt="" aria-hidden className="h-5 w-5 object-contain" />
       </span>
     );
   }
@@ -74,6 +74,15 @@ export function AutopayGatewayMark({
 /** The SBP mark on its own: a one-time payment that goes over SBP. */
 export function SbpMark({ className }: { className?: string }) {
   return <img src={sbpIconUrl} alt="" aria-hidden className={cn("object-contain", className)} />;
+}
+
+/**
+ * Маленький знак банковской карты рядом с логотипом шлюза. Нужен, чтобы блок
+ * иконки был той же ширины, что у Antilopay (логотип + СБП): тогда подписи
+ * всех строк списка оплаты стоят строго друг под другом (владелец, 22.11.2026).
+ */
+export function CardMark({ className }: { className?: string }) {
+  return <CreditCard aria-hidden className={cn("text-[color:var(--brand-muted-foreground)]", className)} />;
 }
 
 export function GatewayIcon({

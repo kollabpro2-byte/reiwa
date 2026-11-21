@@ -31,7 +31,7 @@ import { savePendingCheckout } from "@/lib/pending-checkout";
 import { TariffCard } from "@/features/plans/tariff-card";
 import { gatewayCaption, gatewayLabel, gatewayRowCaption } from "@/lib/gateway-display";
 import { createRenewalIdempotencyKey } from "./renewal-idempotency";
-import { AutopayGatewayMark, GatewayIcon, SbpMark } from "@/components/ui/gateway-icon";
+import { AutopayGatewayMark, CardMark, GatewayIcon, SbpMark } from "@/components/ui/gateway-icon";
 import {
   autopayCaptionKey,
   autopayHintKey,
@@ -1027,18 +1027,23 @@ function SelectGateway() {
                   "flex shrink-0 items-center",
                   // Antilopay платит по СБП: рядом с её знаком стоит знак СБП,
                   // чтобы разовая оплата читалась до нажатия (скриншот 21.11.2026).
-                  gw.type === "ANTILOPAY" ? "gap-1" : "h-7 w-7 justify-center text-2xl",
+                  // У Platega — маленькая карта: блок иконки той же ширины, и все
+                  // подписи встают строго друг под другом.
+                  gw.type === "ANTILOPAY" || gw.type === "PLATEGA"
+                    ? "gap-1"
+                    : "h-7 w-7 justify-center text-2xl",
                 )}
               >
                 <GatewayIcon type={gw.type} currency={gw.currency} iconSvg={gw.displayIconSvg} className="h-7 w-7" />
                 {gw.type === "ANTILOPAY" && <SbpMark className="h-5 w-5" />}
+                {gw.type === "PLATEGA" && <CardMark className="h-5 w-5" />}
               </span>
               <div className="min-w-0 text-left">
                 <p className="font-medium text-[color:var(--brand-foreground)]">{gatewayLabel(gw.type, gw.displayName)}</p>
-                {/* Подпись заметнее служебного серого, но тише названия над ней.
-                    Вес — как у Platega (обычный), цвет — как у пояснения Antilopay:
-                    все три строки читаются одинаково (владелец, 22.11.2026). */}
-                <p className="whitespace-pre-line text-xs text-[color:var(--brand-foreground)] opacity-80">
+                {/* Все три подписи — один шрифт, цвет и вес: чуть темнее
+                    служебной подписи, но заметнее прежнего серого
+                    (владелец, 22.11.2026). */}
+                <p className="whitespace-pre-line text-xs font-medium text-[color:var(--brand-foreground)] opacity-70">
                   {gatewayRowCaption(gw, t)}
                 </p>
               </div>
@@ -1062,8 +1067,8 @@ function SelectGateway() {
                     />
                     <div className="min-w-0 text-left">
                       <p className="font-semibold text-[color:var(--brand-foreground)]">{t("purchase.gateway.autopayTitle")}</p>
-                      {/* Тот же тон и вес, что у «разовая оплата по СБП». */}
-                      <p className="text-xs text-[color:var(--brand-foreground)] opacity-80">
+                      {/* Тот же шрифт, цвет и вес, что у «разовая оплата по СБП». */}
+                      <p className="text-xs font-medium text-[color:var(--brand-foreground)] opacity-70">
                         {delay === null
                           ? t(autopayNoteKey(method, gw.type))
                           : t("purchase.gateway.autopayCaptionSbpDelayShort", { delay: describeAutopayDelay(t, delay) })}
