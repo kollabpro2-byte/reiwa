@@ -78,6 +78,10 @@ env:
   PANEL_REPOSITORY: ghcr.io/${{ github.repository_owner }}/rezeis
   CABINET_REPOSITORY: ghcr.io/${{ github.repository }}
   SUITE_REPOSITORY: ${{ github.repository_owner }}/rezeis
+  # Релизы (`v*`) живут в апстриме панели: у форка тегов-релизов нет, поэтому
+  # mixed pair берёт «тот релиз, что у операторов» оттуда. Для апстрима это тот
+  # же репозиторий, что PANEL_REPOSITORY.
+  PANEL_RELEASE_REPOSITORY: ghcr.io/dizzzable/rezeis
 
 jobs:
   e2e:
@@ -151,7 +155,7 @@ jobs:
                 note="mixed pair: the panel named at dispatch, $panel"
               else
                 why="${RUNNER_TEMP:-/tmp}/released-image.why"
-                if ! panel="$(node rezeis/e2e/released-image.mts "${PANEL_REPOSITORY#ghcr.io/}" 2> "$why")"; then
+                if ! panel="$(node rezeis/e2e/released-image.mts "${PANEL_RELEASE_REPOSITORY#ghcr.io/}" 2> "$why")"; then
                   cat "$why"
                   echo "::error title=E2E mixed::could not resolve the panel release operators run now"
                   exit 1
