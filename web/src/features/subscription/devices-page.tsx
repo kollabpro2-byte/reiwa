@@ -15,6 +15,7 @@ import { BackButton } from '@/components/ui/back-button'
 import { TipCard } from '@/components/ui/tip-card'
 import { LoadErrorCard } from '@/components/ui/load-error-card'
 import { resolveDevicesViewState } from '@/lib/devices-view-state'
+import { deviceActivity, type DeviceActivityBucket } from '@/lib/device-activity'
 import { useOperatorTimeZone } from '@/lib/operator-time-zone'
 import { formatDate } from '@/lib/utils'
 import { useSession } from '@/hooks/use-session'
@@ -28,6 +29,24 @@ function platformIcon(platform: string | null) {
   if (p.includes('windows') || p.includes('win')) return <WindowsGlyph className="h-5 w-5 text-sky-400" />
   if (p.includes('linux')) return <LinuxGlyph className="h-5 w-5 text-amber-400" />
   return <Globe className="h-5 w-5 text-muted-foreground" />
+}
+
+/**
+ * Полоса активности: длина — свежесть последнего подключения, цвет — то же
+ * самое словами. Зелёный — устройство живое, красный — давно молчит и его
+ * можно удалить, чтобы освободить слот.
+ */
+function activityTone(bucket: DeviceActivityBucket): string {
+  switch (bucket) {
+    case 'now':
+      return 'bg-emerald-400'
+    case 'week':
+      return 'bg-cyan-400'
+    case 'month':
+      return 'bg-amber-400'
+    default:
+      return 'bg-rose-400'
+  }
 }
 
 export default function DevicesPage() {
@@ -130,6 +149,24 @@ export default function DevicesPage() {
                       {t('devices.lastSeenLabel', { date: formatDate(device.lastSeenAt, dateZone) })}
                     </p>
                   )}
+                  {/* Линия активности: по ней видно, какие устройства живые,
+                      а какие молчат и их можно удалить. */}
+                  {(() => {
+                    const activity = deviceActivity(device.lastSeenAt)
+                    return (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="h-1 flex-1 overflow-hidden rounded-full bg-[color:var(--color-surface-high)]">
+                          <span
+                            className={`block h-full rounded-full ${activityTone(activity.bucket)}`}
+                            style={{ width: `${Math.round(activity.fraction * 100)}%` }}
+                          />
+                        </span>
+                        <span className="shrink-0 text-[10px] leading-none text-muted-foreground">
+                          {t(`devices.activity.${activity.bucket}`)}
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </div>
                 <button
                   onClick={() => {

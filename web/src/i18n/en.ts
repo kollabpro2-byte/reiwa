@@ -1610,6 +1610,15 @@ export const en: RuDict = {
     emptyHint: 'Connect to VPN — the device will appear here',
     deviceFallback: 'Device',
     lastSeenLabel: 'Last seen: {{date}}',
+    // There is no per-device traffic in the stack, so the line shows how fresh
+    // the last connection is (the owner, 22.11.2026).
+    activity: {
+      now: 'active',
+      week: 'this week',
+      month: 'this month',
+      stale: 'long inactive',
+      never: 'never connected',
+    },
     unlimited: 'Unlimited',
     multiInfoAria: 'How subscriptions and limits work',
     multiInfoTitle: 'Multi-subscription & limits',
