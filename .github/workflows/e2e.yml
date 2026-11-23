@@ -15,7 +15,7 @@ name: E2E
 # may predate a pair change this cabinet carries — then the job says so and
 # tests what that panel has.
 #
-# The suite lives in the panel's repository (dizzzable/rezeis, e2e/) and is
+# The suite lives in the panel's repository (`<owner>/rezeis`, e2e/) and is
 # checked out from its `main`; that repository is public, so no token beyond
 # this run's is needed. Its rezeis/.github/workflows/e2e.yml is the mirror of
 # this file, and e2e/e2e-runner.ts decides which scenario is `core` and what
@@ -49,19 +49,19 @@ on:
   workflow_dispatch:
     inputs:
       cabinet_image:
-        description: Cabinet image, for both jobs
+        description: Cabinet image, for both jobs; empty = this repository's :main
         type: string
-        default: ghcr.io/dizzzable/reiwa:main
+        default: ''
       panel_image:
-        description: Panel image of the next-pair job (every scenario)
+        description: Panel image of the next-pair job (every scenario); empty = this owner's rezeis:main
         type: string
-        default: ghcr.io/dizzzable/rezeis:main
+        default: ''
       released_panel_image:
         description: Panel image of the mixed-pair job (core); empty = the release operators run now
         type: string
         default: ''
       suite_ref:
-        description: Branch, tag or sha of dizzzable/rezeis to take the suite from
+        description: Branch, tag or sha of this owner's rezeis to take the suite from
         type: string
         default: main
 
@@ -69,9 +69,15 @@ permissions:
   contents: read
 
 env:
-  PANEL_REPOSITORY: ghcr.io/dizzzable/rezeis
-  CABINET_REPOSITORY: ghcr.io/dizzzable/reiwa
-  SUITE_REPOSITORY: dizzzable/rezeis
+  # Образы берутся из реестра ТОГО владельца, где идёт сборка: Docker Publish
+  # кладёт их в `ghcr.io/<owner>/reiwa` и `ghcr.io/<owner>/rezeis`, а не в
+  # апстрим `ghcr.io/dizzzable/...`, которого в форке нет. Без этого E2E падал
+  # на `docker pull ghcr.io/dizzzable/reiwa:sha-<commit>: not found`.
+  # Для апстрима `github.repository_owner` = `dizzzable`, то есть значения
+  # остаются прежними.
+  PANEL_REPOSITORY: ghcr.io/${{ github.repository_owner }}/rezeis
+  CABINET_REPOSITORY: ghcr.io/${{ github.repository }}
+  SUITE_REPOSITORY: ${{ github.repository_owner }}/rezeis
 
 jobs:
   e2e:
