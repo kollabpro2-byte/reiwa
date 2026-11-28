@@ -373,15 +373,25 @@ export class WebAuthNamespace {
     );
   }
 
+  /**
+   * `legacyCurrentPassword` — `sha256(текущий пароль)`: панель проверяет его
+   * только если открытый пароль не подошёл (строка, записанная двойным хешем).
+   */
   changePassword(
     userId: string,
     currentPassword: string,
     newPassword: string,
+    legacyCurrentPassword?: string,
   ): Promise<WebAuthChangePasswordResult> {
     return this.transport.request<WebAuthChangePasswordResult>(
       'POST',
       '/api/internal/web-auth/change-password',
-      { userId, currentPassword, newPassword },
+      {
+        userId,
+        currentPassword,
+        newPassword,
+        ...(legacyCurrentPassword ? { legacyCurrentPassword } : {}),
+      },
     );
   }
 

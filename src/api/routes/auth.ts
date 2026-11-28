@@ -269,16 +269,34 @@ async function continueAfterRevocation(
   }
 }
 
-const changePasswordSchema = z.object({
-  currentPasswordHash: z
-    .string()
-    .length(64, "Current password hash must be a 64-character SHA-256 hex string")
-    .regex(/^[a-f0-9]+$/i, "Current password hash must be a valid hex string"),
-  newPasswordHash: z
-    .string()
-    .length(64, "New password hash must be a 64-character SHA-256 hex string")
-    .regex(/^[a-f0-9]+$/i, "New password hash must be a valid hex string"),
-});
+const changePasswordSchema = z
+  .object({
+    /**
+     * Пароли в открытом виде (новый контракт): панель хеширует их сама, как при
+     * входе. Хеш-поля — для старых клиентов и как переходная проверка текущего
+     * пароля: строка, записанная двойным хешем, открывается только sha256.
+     */
+    currentPassword: z.string().min(1).max(128).optional(),
+    currentPasswordHash: z
+      .string()
+      .length(64, "Current password hash must be a 64-character SHA-256 hex string")
+      .regex(/^[a-f0-9]+$/i, "Current password hash must be a valid hex string")
+      .optional(),
+    newPassword: z.string().min(8).max(128).optional(),
+    newPasswordHash: z
+      .string()
+      .length(64, "New password hash must be a 64-character SHA-256 hex string")
+      .regex(/^[a-f0-9]+$/i, "New password hash must be a valid hex string")
+      .optional(),
+  })
+  .refine((body) => Boolean(body.currentPassword || body.currentPasswordHash), {
+    message: "Current password is required",
+    path: ["currentPassword"],
+  })
+  .refine((body) => Boolean(body.newPassword || body.newPasswordHash), {
+    message: "New password is required",
+    path: ["newPassword"],
+  });
 
 // ── Client error shaping ────────────────────────────────────────────────────
 // Public Mini App users must never see operator/env diagnostics (Origin/CSRF,
@@ -1031,7 +1049,7 @@ export function createAuthRouter(deps: {
         return;
       }
 
-      const { currentPasswordHash, newPasswordHash } = parsed.data;
+      const { currentPassword, currentPasswordHash, newPassword, newPasswordHash } = parsed.data;
 
       if (!adminClient) {
         res.status(503).json({ message: "Service unavailable. Please retry after 30 seconds." });
@@ -1042,8 +1060,10 @@ export function createAuthRouter(deps: {
       const userId = req.webSession.userId;
       const result = await adminClient.webAuth.changePassword(
         userId,
-        currentPasswordHash,
-        newPasswordHash,
+        currentPassword ?? currentPasswordHash!,
+        newPassword ?? newPasswordHash!,
+        // Переходное: панель проверит его только если открытый пароль не подошёл.
+        currentPassword === undefined ? undefined : currentPasswordHash,
       );
 
       // The panel signed every session of the account out as of the change.

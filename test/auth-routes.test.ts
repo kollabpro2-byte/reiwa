@@ -503,6 +503,44 @@ describe("POST /api/v1/auth/change-password", () => {
     assert.equal(adminClient.webAuth.changePassword.mock.calls.length, 1);
   });
 
+  it("hands the panel the plain passwords, and the sha256 of the current one as its fallback", async () => {
+    const { app, adminClient } = await buildApp({ authenticated: true });
+    const res = await request(app, {
+      method: "POST",
+      path: "/api/v1/auth/change-password",
+      body: {
+        currentPassword: "TempPass-123",
+        currentPasswordHash: "a".repeat(64),
+        newPassword: "Correct-Horse-9",
+      },
+    });
+    assert.equal(res.status, 200);
+    const args = adminClient.webAuth.changePassword.mock.calls[0] as unknown as unknown[];
+    assert.deepEqual(args.slice(1), ["TempPass-123", "Correct-Horse-9", "a".repeat(64)]);
+  });
+
+  it("keeps serving an old client that sends only the hashes", async () => {
+    const { app, adminClient } = await buildApp({ authenticated: true });
+    const res = await request(app, {
+      method: "POST",
+      path: "/api/v1/auth/change-password",
+      body: { currentPasswordHash: "a".repeat(64), newPasswordHash: "b".repeat(64) },
+    });
+    assert.equal(res.status, 200);
+    const args = adminClient.webAuth.changePassword.mock.calls[0] as unknown as unknown[];
+    assert.deepEqual(args.slice(1), ["a".repeat(64), "b".repeat(64), undefined]);
+  });
+
+  it("rejects a body with no new password", async () => {
+    const { app } = await buildApp({ authenticated: true });
+    const res = await request(app, {
+      method: "POST",
+      path: "/api/v1/auth/change-password",
+      body: { currentPassword: "TempPass-123" },
+    });
+    assert.equal(res.status, 400);
+  });
+
   /**
    * The panel's refusals of this call, as its `AdminSafeExceptionFilter` writes
    * them — produced by running the filter (`$SW/pair/a1-work/filter-body.cjs`),

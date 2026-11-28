@@ -1204,7 +1204,7 @@ describe('the forced password change', () => {
     await submit(page.querySelector('form'));
 
     expect(appApi.changePasswordAuth.mock.calls).toEqual([
-      [{ currentPasswordHash: sha256('TempPass-123'), newPasswordHash: sha256('Correct-Horse-9') }],
+      [{ currentPassword: 'TempPass-123', currentPasswordHash: sha256('TempPass-123'), newPassword: 'Correct-Horse-9' }],
     ]);
     expect(route.navigate).not.toHaveBeenCalled();
     expect(page.querySelector('[data-testid="saved-login"]')?.textContent).toBe('alice');
@@ -1352,7 +1352,7 @@ describe('privacy: change password', () => {
     await submit(form);
 
     expect(appApi.changePasswordAuth.mock.calls).toEqual([
-      [{ currentPasswordHash: sha256('old-password-1'), newPasswordHash: sha256('new-password-2') }],
+      [{ currentPassword: 'old-password-1', currentPasswordHash: sha256('old-password-1'), newPassword: 'new-password-2' }],
     ]);
   });
 });
