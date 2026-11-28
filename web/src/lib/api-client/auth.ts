@@ -52,9 +52,12 @@ export interface AuthStatusResponse {
 }
 
 // ── Web password change ──────────────────────────────────────────────────────
+// The plain passwords go over TLS and the panel hashes them; `currentPasswordHash`
+// rides along only so a row stored as scrypt(sha256(password)) still opens.
 export const changePasswordAuth = (data: {
+  currentPassword: string;
   currentPasswordHash: string;
-  newPasswordHash: string;
+  newPassword: string;
 }) =>
   apiClient.post("/auth/change-password", data).then((r) => r.data);
 

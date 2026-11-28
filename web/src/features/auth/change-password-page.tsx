@@ -63,8 +63,11 @@ export default function ChangePasswordPage() {
         // password, so this can never replace one.
         savedLogin = (await setFirstPassword(newPasswordHash)).login
       } else {
+        // The plain current password is what the panel checks: the sign-in that
+        // brought the customer here has already rewritten the row as
+        // scrypt(password). The sha256 stays for a row that is still double-hashed.
         const currentPasswordHash = await hashPassword(currentPassword)
-        await changePasswordAuth({ currentPasswordHash, newPasswordHash })
+        await changePasswordAuth({ currentPassword, currentPasswordHash, newPassword })
       }
 
       // Clear the requiresPasswordChange flag

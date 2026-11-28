@@ -696,8 +696,7 @@ function ChangePasswordForm({ login, onSuccess }: { login: string; onSuccess: ()
   const mutation = useMutation({
     mutationFn: async () => {
       const currentHash = await sha256(currentPassword);
-      const newHash = await sha256(newPassword);
-      return changePasswordAuth({ currentPasswordHash: currentHash, newPasswordHash: newHash });
+      return changePasswordAuth({ currentPassword, currentPasswordHash: currentHash, newPassword });
     },
     onSuccess: () => {
       toast.success(t("privacy.passwordChanged"));
